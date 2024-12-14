@@ -5,66 +5,88 @@ import List "mo:base/List";
 import Text "mo:base/Text";
 import Result "mo:base/Result";
 
+
 actor{
+
   public type SuperHero = {
     name: Text;
-    superpowers: List.List <Text>;
+    superpowers: List.List<Text>;
   };
-  public type SuperHeroID = Nat32;
-  private stable var next: SuperHeroID = 0;
-  private stable var superheroes : Trie.Trie <SuperHeroID, SuperHero> = Trie.empty();
+
+  public type SuperHeroID = Nat32; 
   
-  public func createHero (newHero: SuperHero ) : async Nat32{
-    let id = next ;
+  private stable var next : SuperHeroID = 0;
+
+  private stable var superHeroes : Trie.Trie<SuperHeroID, SuperHero> = Trie.empty();
+
+  public func createHero (newHero: SuperHero) : async Nat32{
+
+    
+    let id = next;
     next+=1;
-    superheroes := Trie.replace(
-      superheroes,
+
+    superHeroes := Trie.replace(
+      superHeroes,
       key(id),
       Nat32.equal,
       ?newHero
-    ).0 ;
+    ).0;
+
     return id;
+    
   };
-  public func getHero (id: SuperHeroID): async ?SuperHero{
+
+  public func getHero (id: SuperHeroID) : async ?SuperHero{
     let result = Trie.find(
-      superheroes,
+      superHeroes,
       key(id),
-      Nat32.equal
-      
+      Nat32.equal    
     );
     return result;
   };
 
-  public func updateHero(id: SuperHeroID, newHero: SuperHero) : async Nat32{
-    let result = Trie.find(
-      superheroes,
+  public func updateHero ( id: SuperHeroID, newHero: SuperHero) : async Bool{
+    let result =Trie.find(
+      superHeroes,
       key(id),
       Nat32.equal
     );
-  };
-    public func deleteHero (id:SuperHeroID) : async Bool{
-    let result = Trie.find(
-      superheroes,
-      key(id),
-      Nat32.equal
-      );
-  
 
-    let exists := Option.isSome(result);
-    if(exists){
-      superheroes:=Trie.replace(
-        superheroes,
-        key(id)
+    let exists = Option.isSome(result);
+    if (exists){
+      superHeroes := Trie.replace(
+        superHeroes,
+        key(id),
         Nat32.equal,
-        null
-      ).0;
-      next -= 1;
+        ?newHero
+    ).0;    
     };
     exists
   };
 
-  private func key(x: SuperHeroID) : Trie.Key<SuperHeroID>{
-    {hash = x; key = x};
-  };
+  public func deleteHero(id: SuperHeroID) : async Bool{
+    let result = Trie.find(
+      superHeroes,
+      key(id),
+      Nat32.equal
+    );
 
+  let exists = Option.isSome(result);
+
+    if (exists){
+      superHeroes := Trie.replace(
+        superHeroes,
+        key(id),
+        Nat32.equal,
+        null,
+      ).0;
+    };
+    
+    exists
+  };
+  
+   private func key (x: SuperHeroID) : Trie.Key<SuperHeroID> {
+    {hash = x ; key = x}
+  };
+ 
 };
